@@ -58,6 +58,7 @@ code_blocks:
 social:
   fab fa-github: https://github.com/huola0328 || Github || '#24292e'
   fas fa-envelope: mailto:2282441453@qq.com || Email || '#4a7dbe'
+  fab fa-weixin: javascript:void(0); || WeChat || '#2dc100'
 
 # --------------------------------------
 # Image Settings
@@ -194,7 +195,7 @@ index_layout: 3
 index_post_content:
   method: 3
   # If you set method to 2 or 3, the length need to config
-  length: 500
+  length: 200
 
 # --------------------------------------
 # Post Settings
@@ -299,7 +300,7 @@ aside:
       enable: true
       icon: fab fa-github
       text: Follow Me
-      link: https://github.com/xxxxxx
+      link: https://github.com/huola0328
   card_announcement:
     enable: true
     content: This is my Blog
@@ -484,7 +485,7 @@ math:
 search:
   # Choose: algolia_search / local_search / docsearch
   # leave it empty if you don't need search
-  use:
+  use: local_search
   placeholder:
 
   # Algolia Search
@@ -543,16 +544,29 @@ comments:
   # Leave it empty if you don't need comments
   # Choose: Disqus/Disqusjs/Livere/Gitalk/Valine/Waline/Utterances/Facebook Comments/Twikoo/Giscus/Remark42/Artalk
   # Format of two comments system : Disqus,Waline
-  use:
+  use: Giscus
   # Display the comment name next to the button
   text: true
   # Lazyload: The comment system will be load when comment element enters the browser's viewport.
   # If you set it to true, the comment count will be invalid
   lazyload: false
   # Display comment count in post's top_img
-  count: false
+  count: true
   # Display comment count in Home Page
-  card_post_count: false
+  card_post_count: true
+giscus:
+  repo: huola0328/huola0328.github.io
+  repo_id: R_kgDOSq4O3w
+  category: Announcements
+  category_id: DIC_kwDOSq4O384C-EhJ
+  mapping: pathname
+  strict: 0
+  reactions_enabled: 1
+  emit_metadata: 0
+  input_position: top
+  theme: preferred_color_scheme
+  lang: zh-CN
+
 
 # Disqus
 # https://disqus.com/
@@ -633,19 +647,6 @@ facebook_comments:
 twikoo:
   envId:
   region:
-  # Use Twikoo visitor count as the page view count
-  visitor: false
-  option:
-
-# Giscus
-# https://giscus.app/
-giscus:
-  repo:
-  repo_id:
-  category_id:
-  light_theme: light
-  dark_theme: dark
-  js:
   option:
 
 # Remark42
@@ -943,9 +944,9 @@ abcjs:
 # Mermaid
 # https://github.com/mermaid-js/mermaid
 mermaid:
-  enable: false
+  enable: true
   # Write Mermaid diagrams using code blocks
-  code_write: false
+  code_write: true
   # built-in themes: default / forest / dark / neutral
   theme:
     light: default
@@ -1021,7 +1022,7 @@ instantpage: false
 # Lazyload
 # https://github.com/verlok/vanilla-lazyload
 lazyload:
-  enable: false
+  enable: true
   # Use browser's native lazyload instead of vanilla-lazyload
   native: false
   # Specify the field to use lazyload (site or post)
@@ -1068,9 +1069,9 @@ css_prefix: true
 # Insert the code to head (before '</head>' tag) and the bottom (before '</body>' tag)
 inject:
   head:
-    # - <link rel="stylesheet" href="/xxx.css">
+    - <link rel="stylesheet" href="/css/wechat-qr.css">
   bottom:
-    # - <script src="xxxx"></script>
+    - <script src="/js/wechat-qr.js"></script>
 
 # CDN Settings
 # Don't modify the following settings unless you know how they work

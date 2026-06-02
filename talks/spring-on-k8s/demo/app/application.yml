@@ -1,0 +1,24 @@
+# 放到 src/main/resources/application.yml
+# 开启 Actuator 的 liveness/readiness 探针端点 + 优雅停机
+server:
+  shutdown: graceful          # 优雅停机：停机前处理完在途请求
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus   # 暴露健康端点 + Prometheus 指标
+  endpoint:
+    health:
+      probes:
+        enabled: true        # 开启 /actuator/health/liveness 与 /readiness
+      show-details: always
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

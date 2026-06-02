@@ -1,0 +1,12 @@
+# Service：把一组 demo Pod 暴露为集群内稳定访问入口
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo
+spec:
+  selector:
+    app: demo
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

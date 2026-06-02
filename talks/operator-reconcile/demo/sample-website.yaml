@@ -1,0 +1,12 @@
+# 示例自定义资源：声明一个 Website
+# apply 后，控制器会自动创建一个名为 demo-site 的 Deployment（2 副本 nginx）
+apiVersion: web.example.com/v1
+kind: Website
+metadata:
+  name: demo-site
+  labels:
+    app: demo-site
+spec:
+  image: nginx:1.27
+  replicas: 2
+  port: 80

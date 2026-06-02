@@ -1,0 +1,8 @@
+# 配置外置：把应用配置放进 ConfigMap，注入容器环境变量
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-config
+data:
+  APP_GREETING: "Hello from ConfigMap"   # 会映射到 Spring 的 app.greeting
+  SPRING_PROFILES_ACTIVE: "prod"

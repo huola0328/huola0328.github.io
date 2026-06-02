@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏚️ 消失的室友 - 密室逃脱</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .game-container {
+            width: 800px;
+            background: #16213e;
+            border: 3px solid #0f3460;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(233, 69, 96, 0.3);
+        }
+        .title {
+            text-align: center;
+            font-size: 2em;
+            color: #e94560;
+            margin-bottom: 20px;
+        }
+        .room-info {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .room-name { font-size: 1.5em; color: #f5c518; }
+        .items, .inventory {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .item, .inv-item {
+            background: #e94560;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.9em;
+        }
+        .item:hover, .inv-item:hover {
+            background: #f5c518;
+            color: #1a1a2e;
+            transform: scale(1.05);
+        }
+        .commands {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .cmd-btn {
+            background: #0f3460;
+            color: white;
+            border: 1px solid #e94560;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .cmd-btn:hover { background: #e94560; }
+        .message {
+            background: #0a0a1a;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            min-height: 60px;
+            color: #00ff88;
+            white-space: pre-line;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        #input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #0f3460;
+            border-radius: 5px;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+        .room-nav {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .room-btn {
+            flex: 1;
+            padding: 10px;
+            background: #0f3460;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .room-btn:hover { background: #f5c518; color: #1a1a2e; }
+        .room-btn.active { background: #e94560; }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="title">🏚️ 消失的室友</div>
+        
+        <div class="room-info">
+            <div class="room-name" id="roomName"></div>
+            <div id="roomDesc"></div>
+            <div class="items" id="items"></div>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <div class="inventory" id="inventory"></div>
+
+        <div class="commands">
+            <button class="cmd-btn" onclick="sendAction('look', prompt('查看什么？'))">🔍 查看</button>
+            <button class="cmd-btn" onclick="sendAction('take', prompt('拿什么？'))">✋ 拿起</button>
+            <button class="cmd-btn" onclick="sendAction('use', prompt('使用什么？'))">🔧 使用</button>
+            <button class="cmd-btn" onclick="sendAction('password', prompt('输入密码：'))">🔐 密码</button>
+        </div>
+
+        <div class="room-nav">
+            <button class="room-btn" onclick="sendAction('move', '书桌')">💻 书桌</button>
+            <button class="room-btn" onclick="sendAction('move', '书架')">📚 书架</button>
+            <button class="room-btn" onclick="sendAction('move', '衣柜')">👔 衣柜</button>
+            <button class="room-btn" onclick="sendAction('move', '窗户')">🪟 窗户</button>
+        </div>
+    </div>
+
+    <script>
+        async function loadState() {
+            const res = await fetch('/api/state');
+            const state = await res.json();
+            updateUI(state);
+        }
+
+        async function sendAction(action, target) {
+            if (!target) return;
+            const res = await fetch('/api/action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, target })
+            });
+            const state = await res.json();
+            updateUI(state);
+        }
+
+        function updateUI(state) {
+            document.getElementById('roomName').textContent = state.currentRoom;
+            const room = state.rooms[state.currentRoom];
+            document.getElementById('roomDesc').textContent = room.description;
+
+            const itemsDiv = document.getElementById('items');
+            itemsDiv.innerHTML = '<strong>📦 房间物品：</strong>';
+            room.items.forEach(item => {
+                const span = document.createElement('span');
+                span.className = 'item';
+                span.textContent = item.name;
+                span.onclick = () => sendAction('take', item.name);
+                itemsDiv.appendChild(span);
+            });
+
+            const invDiv = document.getElementById('inventory');
+            invDiv.innerHTML = '<strong>🎒 背包：</strong>';
+            state.inventory.forEach(item => {
+                const span = document.createElement('span');
+                span.className = 'inv-item';
+                span.textContent = item;
+                invDiv.appendChild(span);
+            });
+
+            document.getElementById('message').textContent = state.message || '';
+        }
+
+        loadState();
+    </script>
+</body>
+</html>

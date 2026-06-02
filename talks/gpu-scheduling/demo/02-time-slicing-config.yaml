@@ -1,0 +1,27 @@
+# 演示 2：Time-slicing（时间片共享）配置
+# 让 NVIDIA Device Plugin 把每张物理卡"复制"成 N 个可分配单元，
+# 多个 Pod 即可共享同一张物理 GPU（轮流执行，无隔离，会互相抢占）。
+#
+# 用法：
+#   1) kubectl apply -f 02-time-slicing-config.yaml
+#   2) 让 device-plugin 引用该 ConfigMap（helm values 或 ClusterPolicy 中指定）
+#      GPU Operator 用户：
+#      kubectl patch clusterpolicy/cluster-policy -n gpu-operator --type merge \
+#        -p '{"spec":{"devicePlugin":{"config":{"name":"time-slicing-config","default":"any"}}}}'
+#   3) 之后单节点 nvidia.com/gpu 数量会变成 物理卡数 * replicas
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: time-slicing-config
+  namespace: gpu-operator
+data:
+  any: |-
+    version: v1
+    flags:
+      migStrategy: none
+    sharing:
+      timeSlicing:
+        # 把每张物理 GPU 切成 4 个时间片，可被 4 个 Pod 共享
+        resources:
+          - name: nvidia.com/gpu
+            replicas: 4

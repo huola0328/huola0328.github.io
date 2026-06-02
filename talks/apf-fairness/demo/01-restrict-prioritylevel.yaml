@@ -1,0 +1,21 @@
+# 演示：给某个"吵闹"的客户端单独划一个低并发优先级，把它隔离起来，
+# 避免它挤占正常用户/系统组件的 API 并发额度。
+#
+# 这个 PriorityLevelConfiguration 只给很小的并发份额(shares=1)，并开启排队。
+apiVersion: flowcontrol.apiserver.k8s.io/v1
+kind: PriorityLevelConfiguration
+metadata:
+  name: restrict-noisy
+spec:
+  type: Limited
+  limited:
+    # 并发份额很小：相对其它优先级只能分到很少的并发名额
+    nominalConcurrencyShares: 1
+    # 不把自己空闲额度借出，也限制借入，保证隔离边界清晰
+    lendablePercent: 0
+    limitResponse:
+      type: Queue          # 超额时排队而非直接拒绝
+      queuing:
+        queues: 16         # 队列数 n
+        handSize: 4        # Shuffle Sharding 手牌大小
+        queueLengthLimit: 50

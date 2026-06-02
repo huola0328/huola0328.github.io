@@ -1,0 +1,30 @@
+# 演示 4：Volcano Gang Scheduling（成组调度，All-or-Nothing）
+# 需先安装 Volcano：
+#   kubectl apply -f https://raw.githubusercontent.com/volcano-sh/volcano/master/installer/volcano-development.yaml
+#
+# minAvailable=4 表示：必须 4 个 Pod 同时满足资源才会一起启动，
+# 否则一个都不调度，避免"部分 Pod 占着 GPU 空等"的死锁。
+apiVersion: batch.volcano.sh/v1alpha1
+kind: Job
+metadata:
+  name: distributed-training
+spec:
+  minAvailable: 4          # Gang 的核心：4 个一起成功，否则都不调度
+  schedulerName: volcano
+  queue: default
+  policies:
+    - event: PodEvicted
+      action: RestartJob
+  tasks:
+    - replicas: 4
+      name: worker
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: trainer
+              image: nvidia/cuda:12.4.0-base-ubuntu22.04
+              command: ["/bin/bash", "-c", "echo training rank $HOSTNAME; nvidia-smi; sleep 600"]
+              resources:
+                limits:
+                  nvidia.com/gpu: 1

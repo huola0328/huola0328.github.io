@@ -1,0 +1,27 @@
+# 演示：用 FlowSchema 把指定 ServiceAccount(noisy-sa) 的请求，
+# 全部分类到上面那个低并发优先级 restrict-noisy。
+#
+# matchingPrecedence 数值越小优先级越高（越先匹配）。这里设一个较小的值，
+# 确保比内置的 catch-all / global-default 更早命中。
+apiVersion: flowcontrol.apiserver.k8s.io/v1
+kind: FlowSchema
+metadata:
+  name: restrict-noisy-sa
+spec:
+  priorityLevelConfiguration:
+    name: restrict-noisy
+  matchingPrecedence: 500
+  # 按用户区分流：同一优先级内，不同用户的请求落入不同的流
+  distinguisherMethod:
+    type: ByUser
+  rules:
+    - subjects:
+        - kind: ServiceAccount
+          serviceAccount:
+            name: noisy-sa
+            namespace: default
+      resourceRules:
+        - verbs: ["*"]
+          apiGroups: ["*"]
+          resources: ["*"]
+          namespaces: ["*"]
