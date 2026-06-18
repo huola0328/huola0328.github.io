@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我寄出的信 · 火辣</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: #0a0907; }
+    body { min-height: 100%; background: #0a0907; font-family: 'Ma Shan Zheng','STKaiti',serif; -webkit-font-smoothing: antialiased; color: rgba(245,240,232,.7); }
+    * { cursor: none; }
+    #cur-dot { position: fixed; z-index: 9999; width: 4px; height: 4px; background: rgba(255,255,255,.65); border-radius: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+    #grain { position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: .04; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 220px 220px; }
+    #shan { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    #back { position: fixed; top: 22px; left: 24px; z-index: 50; font-size: .52rem; letter-spacing: .28em; color: rgba(255,255,255,.22); font-family: 'Noto Serif SC',serif; text-decoration: none; transition: color .3s; }
+    #back:hover { color: rgba(255,255,255,.7); }
+    #stamp { position: fixed; bottom: 26px; right: 26px; z-index: 50; font-size: .9rem; letter-spacing: .18em; color: rgba(185,28,28,.55); border: 1px solid rgba(185,28,28,.22); padding: 4px 9px; line-height: 1.4; pointer-events: none; }
+
+    #page-header { position: relative; z-index: 5; padding: 18vh 8vw 6vh; border-bottom: 1px solid rgba(255,255,255,.04); }
+    #page-header h1 { font-size: clamp(2rem,6vmin,4.5rem); color: rgba(245,240,232,.55); letter-spacing: .18em; font-weight: normal; filter: url(#ink); }
+    #page-header p { margin-top: 2vh; font-size: .42rem; letter-spacing: .3em; color: rgba(255,255,255,.18); font-family: 'Noto Serif SC',serif; }
+
+    #main { position: relative; z-index: 5; max-width: 760px; margin: 0 auto; padding: 6vh 8vw 20vh; }
+    #msg-list { display: flex; flex-direction: column; gap: 3vh; }
+    .msg-card { border: 1px solid rgba(255,255,255,.06); padding: 3.5vh 4vw; }
+    .msg-card .msg-name { font-size: .6rem; letter-spacing: .22em; color: rgba(185,28,28,.65); margin-bottom: 1.5vh; }
+    .msg-card .msg-body { font-size: .7rem; line-height: 1.9; color: rgba(245,240,232,.65); white-space: pre-wrap; }
+    .msg-card .msg-time { font-size: .35rem; letter-spacing: .22em; color: rgba(255,255,255,.18); font-family: 'Noto Serif SC',serif; margin-top: 1.8vh; }
+    #loading { text-align: center; padding: 8vh 0; font-size: .5rem; letter-spacing: .28em; color: rgba(255,255,255,.15); font-family: 'Noto Serif SC',serif; }
+    #empty { display: none; text-align: center; padding: 12vh 0; font-size: .52rem; letter-spacing: .3em; color: rgba(255,255,255,.12); font-family: 'Noto Serif SC',serif; }
+  </style>
+</head>
+<body>
+<div id="cur-dot"></div>
+<div id="grain"></div>
+<svg style="position:fixed;width:0;height:0;overflow:hidden"><defs>
+  <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="7" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.5" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</defs></svg>
+<svg id="shan" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs><filter id="b1"><feGaussianBlur stdDeviation="18"/></filter><filter id="b2"><feGaussianBlur stdDeviation="9"/></filter><filter id="b3"><feGaussianBlur stdDeviation="4"/></filter></defs>
+  <path d="M-80,680 Q120,420 260,530 Q400,640 520,280 Q640,-60 740,320 Q840,640 960,230 Q1060,-80 1180,320 Q1280,640 1400,260 Q1460,80 1540,440 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.022)" filter="url(#b1)"/>
+  <path d="M-80,780 Q140,640 280,700 Q420,760 540,530 Q660,300 760,590 Q860,840 950,580 Q1040,330 1140,590 Q1240,840 1340,620 Q1420,440 1540,660 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.036)" filter="url(#b2)"/>
+  <path d="M-80,855 Q160,805 300,832 Q430,855 560,770 Q680,685 780,818 Q860,900 940,838 Q1020,775 1120,840 Q1220,900 1340,838 Q1420,778 1540,848 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.05)" filter="url(#b3)"/>
+</svg>
+
+<a href="/letters/" id="back">← 鸿雁传书</a>
+<div id="stamp">火辣</div>
+
+<header id="page-header">
+  <h1>我寄出的信</h1>
+  <p>只有你与收信人能看见</p>
+</header>
+
+<div id="main">
+  <div id="loading">加载中……</div>
+  <div id="empty">尚未寄出任何信</div>
+  <div id="msg-list"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/firebase-config.js"></script>
+<script>
+var dot=document.getElementById('cur-dot'),mx=innerWidth/2,my=mx,dx=mx,dy=my;
+document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;});
+(function tick(){dx+=(mx-dx)*.35;dy+=(my-dy)*.35;dot.style.left=dx+'px';dot.style.top=dy+'px';requestAnimationFrame(tick);})();
+var shan=document.getElementById('shan'),W=innerWidth,H=innerHeight;
+document.addEventListener('mousemove',function(e){shan.style.transform='translate('+(((e.clientX/W)-.5)*12).toFixed(1)+'px,'+(((e.clientY/H)-.5)*8).toFixed(1)+'px)';});
+window.addEventListener('resize',function(){W=innerWidth;H=innerHeight;});
+
+var UUID=localStorage.getItem('sender_uuid');
+var configured=(window.SB_URL&&window.SB_URL.indexOf('YOUR_PROJECT')<0);
+
+if(!UUID||!configured){
+  document.getElementById('loading').textContent=!UUID?'此设备未曾寄出过信':'请先配置 firebase-config.js 中的 SB_URL / SB_KEY';
+} else {
+  var sb=supabase.createClient(window.SB_URL,window.SB_KEY);
+  sb.from('letters').select('*').eq('uuid',UUID).order('created_at',{ascending:false})
+    .then(function(res){
+      document.getElementById('loading').style.display='none';
+      if(res.error){document.getElementById('loading').textContent='加载失败: '+res.error.message;return;}
+      if(!res.data.length){document.getElementById('empty').style.display='block';return;}
+      res.data.forEach(function(d){
+        var card=document.createElement('div'); card.className='msg-card';
+        var ts=d.created_at?new Date(d.created_at).toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'}):'';
+        card.innerHTML='<div class="msg-name">'+esc(d.name)+'</div><div class="msg-body">'+esc(d.body)+'</div><div class="msg-time">'+ts+'</div>';
+        document.getElementById('msg-list').appendChild(card);
+      });
+    });
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>

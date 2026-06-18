@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>浮光掠影 · 火辣</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { min-height: 100%; background: #0a0907; font-family: 'Ma Shan Zheng','STKaiti',serif; -webkit-font-smoothing: antialiased; color: rgba(245,240,232,.7); }
+    #bg { position: fixed; inset: 0; z-index: 0; background: url('/images/bg-river.jpg') center/cover no-repeat; }
+    #bg::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.72); }
+    * { cursor: none; }
+    #cur-dot {
+      position: fixed; z-index: 9999;
+      width: 4px; height: 4px;
+      background: rgba(255,255,255,.65);
+      border-radius: 50%; transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+    #cur-ring {
+      position: fixed; z-index: 9998;
+      width: 28px; height: 28px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 50%; transform: translate(-50%,-50%);
+      pointer-events: none;
+      transition: width .3s, height .3s, border-color .3s;
+    }
+    .on-link #cur-ring { width: 50px; height: 50px; border-color: rgba(185,28,28,.45); }
+
+    #grain {
+      position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: .04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+    }
+    #shan { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+
+    /* 返回按钮 */
+    #back {
+      position: fixed; top: 22px; left: 24px; z-index: 50;
+      font-size: .52rem; letter-spacing: .28em;
+      color: rgba(255,255,255,.22);
+      font-family: 'Noto Serif SC', serif;
+      text-decoration: none;
+      transition: color .3s;
+    }
+    #back:hover { color: rgba(255,255,255,.7); }
+
+    /* 印章 */
+    #stamp {
+      position: fixed; bottom: 26px; right: 26px; z-index: 50;
+      font-size: .9rem; letter-spacing: .18em;
+      color: rgba(185,28,28,.55);
+      border: 1px solid rgba(185,28,28,.22);
+      padding: 4px 9px; line-height: 1.4;
+      pointer-events: none;
+    }
+
+    /* Hero 标题（斜角布局） */
+    #hero {
+      position: relative; z-index: 5;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .entry-frame {
+      display: flex; align-items: stretch; gap: 3vmin;
+    }
+    .t-part {
+      font-family: 'Ma Shan Zheng', 'STKaiti', serif;
+      font-size: clamp(3.2rem, 8.5vmin, 7.5rem);
+      color: rgba(245,240,232,.68);
+      writing-mode: vertical-rl; text-orientation: mixed;
+      letter-spacing: .06em; line-height: 1.1;
+      filter: url(#ink);
+    }
+    .t-left  { align-self: flex-start; }
+    .t-right { align-self: flex-end; }
+    .media-box {
+      width: min(42vmin, 380px); height: min(42vmin, 380px);
+      border: 1px solid rgba(255,255,255,.09);
+      background: #080806;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative; flex-shrink: 0;
+    }
+    .media-box video, .media-box iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover; border: none;
+    }
+    .media-ph {
+      font-size: .48rem; letter-spacing: .3em;
+      color: rgba(255,255,255,.1);
+      font-family: 'Noto Serif SC', serif;
+    }
+
+    /* 内容区 */
+    #content {
+      position: relative; z-index: 5;
+      padding: 10vh 12vw 20vh;
+    }
+    .content-hint {
+      font-size: .55rem; letter-spacing: .32em;
+      color: rgba(255,255,255,.12);
+      font-family: 'Noto Serif SC', serif;
+      text-align: center; padding: 6vh 0;
+    }
+    .section-title {
+      font-size: 1.1rem; letter-spacing: .2em;
+      color: rgba(245,240,232,.35);
+      margin-bottom: 4vh;
+      border-left: 1px solid rgba(255,255,255,.1);
+      padding-left: 16px;
+    }
+
+    /* SVG filter */
+    .svg-defs { position: fixed; width: 0; height: 0; overflow: hidden; }
+  </style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="cur-dot"></div>
+<div id="grain"></div>
+
+<svg class="svg-defs">
+  <defs>
+    <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.5"
+          xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<svg id="shan" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
+     xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="b1"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="b2"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="b3"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <path d="M-80,680 Q120,420 260,530 Q400,640 520,280 Q640,-60 740,320 Q840,640 960,230 Q1060,-80 1180,320 Q1280,640 1400,260 Q1460,80 1540,440 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.022)" filter="url(#b1)"/>
+  <path d="M-80,780 Q140,640 280,700 Q420,760 540,530 Q660,300 760,590 Q860,840 950,580 Q1040,330 1140,590 Q1240,840 1340,620 Q1420,440 1540,660 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.036)" filter="url(#b2)"/>
+  <path d="M-80,855 Q160,805 300,832 Q430,855 560,770 Q680,685 780,818 Q860,900 940,838 Q1020,775 1120,840 Q1220,900 1340,838 Q1420,778 1540,848 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.05)" filter="url(#b3)"/>
+</svg>
+
+<style>
+  #topbar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 26px;background:linear-gradient(to bottom,rgba(10,9,7,.85),transparent)}
+  #back{font-size:.5rem;letter-spacing:.28em;color:rgba(255,255,255,.22);font-family:'Noto Serif SC',serif;text-decoration:none;transition:color .3s}
+  #back:hover{color:rgba(255,255,255,.7)}
+  #page-title{font-size:.95rem;letter-spacing:.25em;color:rgba(245,240,232,.45);font-family:'Ma Shan Zheng',serif}
+  #admin-badge{font-size:.42rem;letter-spacing:.22em;color:rgba(185,28,28,.7);font-family:'Noto Serif SC',serif;cursor:pointer}
+  #stamp{position:fixed;bottom:26px;right:26px;z-index:50;font-size:.9rem;letter-spacing:.18em;color:rgba(185,28,28,.55);border:1px solid rgba(185,28,28,.22);padding:4px 9px;line-height:1.4;cursor:pointer;user-select:none}
+  #vlist-wrap{position:relative;z-index:5;max-width:560px;margin:0 auto;padding:80px 16px 16vh}
+  #vloading{text-align:center;padding:20vh 0;font-size:.52rem;letter-spacing:.3em;color:rgba(255,255,255,.15);font-family:'Noto Serif SC',serif}
+  #vempty{display:none;text-align:center;padding:20vh 0;font-size:.55rem;letter-spacing:.32em;color:rgba(255,255,255,.12);font-family:'Noto Serif SC',serif}
+  #vlist{display:flex;flex-direction:column;gap:3vh}
+  .v-card{border:1px solid rgba(255,255,255,.07);border-radius:2px;overflow:hidden;background:rgba(255,255,255,.02)}
+  .v-card video{width:100%;max-height:58vh;display:block;background:#000}
+  .v-meta{padding:10px 16px;font-size:.35rem;letter-spacing:.2em;color:rgba(255,255,255,.2);font-family:'Noto Serif SC',serif}
+  #upload-btn{display:none;position:fixed;bottom:80px;right:26px;z-index:50;background:rgba(185,28,28,.82);color:rgba(255,255,255,.9);border:none;padding:10px 18px;font-family:'Ma Shan Zheng',serif;font-size:.75rem;letter-spacing:.2em;cursor:pointer}
+  #upload-progress{display:none;position:fixed;bottom:132px;right:26px;z-index:50;font-size:.4rem;letter-spacing:.2em;color:rgba(255,255,255,.6);font-family:'Noto Serif SC',serif;background:rgba(0,0,0,.65);padding:6px 12px}
+  .v-note{padding:0 16px 10px;font-size:.38rem;letter-spacing:.2em;color:rgba(255,255,255,.32);font-family:'Noto Serif SC',serif}
+  #caption-panel{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(10,9,7,.95);border-top:1px solid rgba(255,255,255,.08);padding:4vh 8vw}
+  #caption-panel label{display:block;font-size:.4rem;letter-spacing:.25em;color:rgba(255,255,255,.3);font-family:'Noto Serif SC',serif;margin-bottom:1.5vh}
+  #caption-input{width:100%;background:rgba(255,255,255,.04);border:none;border-bottom:1px solid rgba(255,255,255,.15);color:rgba(245,240,232,.8);font-family:'Ma Shan Zheng',serif;font-size:.7rem;padding:.5em 0;outline:none;margin-bottom:2.5vh}
+  .caption-btns{display:flex;gap:3vw}
+  #caption-skip{background:none;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.3);font-family:'Ma Shan Zheng',serif;font-size:.6rem;letter-spacing:.2em;padding:.5em 1.5em;cursor:pointer}
+  #caption-confirm{background:none;border:1px solid rgba(185,28,28,.45);color:rgba(185,28,28,.8);font-family:'Ma Shan Zheng',serif;font-size:.6rem;letter-spacing:.2em;padding:.5em 1.5em;cursor:pointer}
+</style>
+
+<div id="topbar">
+  <a href="/?dir=1" id="back">← 目录</a>
+  <div id="page-title">浮光掠影</div>
+  <div id="admin-badge" style="display:none">管理模式</div>
+</div>
+
+<div id="vlist-wrap">
+  <div id="vloading">加载中……</div>
+  <div id="vempty">尚无影像</div>
+  <div id="vlist"></div>
+</div>
+
+<div id="stamp">火辣</div>
+<button id="upload-btn">＋ 上传影像</button>
+<div id="upload-progress"></div>
+<input type="file" id="file-input" accept="video/*" style="display:none">
+<div id="caption-panel">
+  <label>为此影像添加备注（可不填）</label>
+  <input id="caption-input" type="text" placeholder="写点什么……" maxlength="80" autocomplete="off">
+  <div class="caption-btns"><button id="caption-skip">跳过</button><button id="caption-confirm">确认上传</button></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/firebase-config.js"></script>
+<script>
+var dot=document.getElementById('cur-dot'),mx=innerWidth/2,my=mx,dx=mx,dy=my;
+document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;});
+(function tick(){dx+=(mx-dx)*.35;dy+=(my-dy)*.35;dot.style.left=dx+'px';dot.style.top=dy+'px';requestAnimationFrame(tick);})();
+var shan=document.getElementById('shan'),W=innerWidth,H=innerHeight;
+document.addEventListener('mousemove',function(e){shan.style.transform='translate('+(((e.clientX/W)-.5)*12).toFixed(1)+'px,'+(((e.clientY/H)-.5)*8).toFixed(1)+'px)';});
+window.addEventListener('resize',function(){W=innerWidth;H=innerHeight;});
+
+var ADMIN=(sessionStorage.getItem('admin')==='1'),sc=0;
+document.getElementById('stamp').addEventListener('click',function(){if(++sc>=3){sc=0;var pw=prompt('管理员密码');if(pw===window.ADMIN_PASSWORD){sessionStorage.setItem('admin','1');ADMIN=true;document.getElementById('admin-badge').style.display='block';document.getElementById('upload-btn').style.display='block';}else if(pw!==null)alert('密码错误');}});
+if(ADMIN){document.getElementById('admin-badge').style.display='block';document.getElementById('upload-btn').style.display='block';}
+document.getElementById('admin-badge').addEventListener('click',function(){
+  sessionStorage.removeItem('admin');ADMIN=false;
+  document.getElementById('admin-badge').style.display='none';
+  document.getElementById('upload-btn').style.display='none';
+  loadVideos();
+});
+
+var configured=(window.SB_URL&&window.SB_URL.indexOf('YOUR_PROJECT')<0);
+var sb=configured?supabase.createClient(window.SB_URL,window.SB_KEY):null;
+if(configured) loadVideos();
+else document.getElementById('vloading').textContent='请先配置 firebase-config.js 中的 SB_URL / SB_KEY';
+
+function loadVideos(){
+  document.getElementById('vlist').innerHTML='';
+  document.getElementById('vempty').style.display='none';
+  sb.from('glimpses').select('*').order('created_at',{ascending:false})
+    .then(function(res){
+      document.getElementById('vloading').style.display='none';
+      if(res.error){document.getElementById('vloading').textContent='加载失败: '+res.error.message;return;}
+      if(!res.data.length){document.getElementById('vempty').style.display='block';return;}
+      res.data.forEach(addCard);
+    });
+}
+function addCard(row){
+  var wrap=document.createElement('div'); wrap.className='v-card';
+  var ts=row.created_at?new Date(row.created_at).toLocaleDateString('zh-CN'):'';
+  var note=row.note?'<div class="v-note">'+esc(row.note)+'</div>':'';
+  wrap.innerHTML='<video controls preload="none" src="'+row.url+'"></video>'
+    +note+'<div class="v-meta">'+ts+'</div>';
+  document.getElementById('vlist').appendChild(wrap);
+}
+document.getElementById('upload-btn').addEventListener('click',function(){document.getElementById('file-input').click();});
+var _pendingFile=null;
+document.getElementById('file-input').addEventListener('change',function(e){
+  _pendingFile=e.target.files[0]; e.target.value='';
+  if(!_pendingFile) return;
+  document.getElementById('caption-input').value='';
+  document.getElementById('caption-panel').style.display='block';
+});
+function doUploadVideo(note){
+  document.getElementById('caption-panel').style.display='none';
+  var file=_pendingFile; _pendingFile=null;
+  var prog=document.getElementById('upload-progress');prog.style.display='block';prog.textContent='上传中…';
+  var ext=file.name.split('.').pop().toLowerCase()||'mp4';
+  var path='glimpses/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+ext;
+  sb.storage.from('glimpses').upload(path,file)
+    .then(function(res){
+      if(res.error) throw res.error;
+      var url=sb.storage.from('glimpses').getPublicUrl(path).data.publicUrl;
+      return sb.from('glimpses').insert({url:url,note:note||null});
+    }).then(function(res){
+      if(res.error) throw res.error;
+      prog.textContent='上传完成';setTimeout(function(){prog.style.display='none';},2000);loadVideos();
+    }).catch(function(err){prog.textContent='上传失败: '+err.message;});
+}
+document.getElementById('caption-skip').addEventListener('click',function(){doUploadVideo('');});
+document.getElementById('caption-confirm').addEventListener('click',function(){
+  doUploadVideo(document.getElementById('caption-input').value.trim());
+});
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>

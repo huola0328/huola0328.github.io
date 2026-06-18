@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>丝竹管弦 · 火辣</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { min-height: 100%; background: #0a0907; font-family: 'Ma Shan Zheng','STKaiti',serif; -webkit-font-smoothing: antialiased; color: rgba(245,240,232,.7); }
+    #bg { position: fixed; inset: 0; z-index: 0; background: url('/images/bg-river.jpg') center/cover no-repeat; }
+    #bg::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.72); }
+    * { cursor: none; }
+    #cur-dot {
+      position: fixed; z-index: 9999;
+      width: 4px; height: 4px;
+      background: rgba(255,255,255,.65);
+      border-radius: 50%; transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+    #cur-ring {
+      position: fixed; z-index: 9998;
+      width: 28px; height: 28px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 50%; transform: translate(-50%,-50%);
+      pointer-events: none;
+      transition: width .3s, height .3s, border-color .3s;
+    }
+    .on-link #cur-ring { width: 50px; height: 50px; border-color: rgba(185,28,28,.45); }
+
+    #grain {
+      position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: .04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+    }
+    #shan { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+
+    /* 返回按钮 */
+    #back {
+      position: fixed; top: 22px; left: 24px; z-index: 50;
+      font-size: .52rem; letter-spacing: .28em;
+      color: rgba(255,255,255,.22);
+      font-family: 'Noto Serif SC', serif;
+      text-decoration: none;
+      transition: color .3s;
+    }
+    #back:hover { color: rgba(255,255,255,.7); }
+
+    /* 印章 */
+    #stamp {
+      position: fixed; bottom: 26px; right: 26px; z-index: 50;
+      font-size: .9rem; letter-spacing: .18em;
+      color: rgba(185,28,28,.55);
+      border: 1px solid rgba(185,28,28,.22);
+      padding: 4px 9px; line-height: 1.4;
+      pointer-events: auto;
+    }
+
+    /* Hero 标题（斜角布局） */
+    #hero {
+      position: relative; z-index: 5;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .entry-frame {
+      display: flex; align-items: stretch; gap: 3vmin;
+    }
+    .t-part {
+      font-family: 'Ma Shan Zheng', 'STKaiti', serif;
+      font-size: clamp(3.2rem, 8.5vmin, 7.5rem);
+      color: rgba(245,240,232,.68);
+      writing-mode: vertical-rl; text-orientation: mixed;
+      letter-spacing: .06em; line-height: 1.1;
+      filter: url(#ink);
+    }
+    .t-left  { align-self: flex-start; }
+    .t-right { align-self: flex-end; }
+    .media-box {
+      width: min(42vmin, 380px); height: min(42vmin, 380px);
+      border: 1px solid rgba(255,255,255,.09);
+      background: #080806;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative; flex-shrink: 0;
+    }
+    .media-box video, .media-box iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover; border: none;
+    }
+    .media-ph {
+      font-size: .48rem; letter-spacing: .3em;
+      color: rgba(255,255,255,.1);
+      font-family: 'Noto Serif SC', serif;
+    }
+
+    /* 内容区 */
+    #content {
+      position: relative; z-index: 5;
+      padding: 10vh 12vw 20vh;
+    }
+    .content-hint {
+      font-size: .55rem; letter-spacing: .32em;
+      color: rgba(255,255,255,.12);
+      font-family: 'Noto Serif SC', serif;
+      text-align: center; padding: 6vh 0;
+    }
+    .section-title {
+      font-size: 1.1rem; letter-spacing: .2em;
+      color: rgba(245,240,232,.35);
+      margin-bottom: 4vh;
+      border-left: 1px solid rgba(255,255,255,.1);
+      padding-left: 16px;
+    }
+
+    /* SVG filter */
+    .svg-defs { position: fixed; width: 0; height: 0; overflow: hidden; }
+  </style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="cur-dot"></div>
+<div id="grain"></div>
+
+<svg class="svg-defs">
+  <defs>
+    <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.5"
+          xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<svg id="shan" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
+     xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="b1"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="b2"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="b3"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <path d="M-80,680 Q120,420 260,530 Q400,640 520,280 Q640,-60 740,320 Q840,640 960,230 Q1060,-80 1180,320 Q1280,640 1400,260 Q1460,80 1540,440 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.022)" filter="url(#b1)"/>
+  <path d="M-80,780 Q140,640 280,700 Q420,760 540,530 Q660,300 760,590 Q860,840 950,580 Q1040,330 1140,590 Q1240,840 1340,620 Q1420,440 1540,660 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.036)" filter="url(#b2)"/>
+  <path d="M-80,855 Q160,805 300,832 Q430,855 560,770 Q680,685 780,818 Q860,900 940,838 Q1020,775 1120,840 Q1220,900 1340,838 Q1420,778 1540,848 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.05)" filter="url(#b3)"/>
+</svg>
+
+<style>
+  #topbar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 26px;background:linear-gradient(to bottom,rgba(10,9,7,.85),transparent)}
+  #back{font-size:.5rem;letter-spacing:.28em;color:rgba(255,255,255,.22);font-family:'Noto Serif SC',serif;text-decoration:none;transition:color .3s}
+  #back:hover{color:rgba(255,255,255,.7)}
+  #page-title{font-size:.95rem;letter-spacing:.25em;color:rgba(245,240,232,.45);font-family:'Ma Shan Zheng',serif}
+  #admin-badge{font-size:.42rem;letter-spacing:.22em;color:rgba(185,28,28,.7);font-family:'Noto Serif SC',serif;cursor:pointer}
+  #stamp{position:fixed;bottom:26px;right:26px;z-index:50;font-size:.9rem;letter-spacing:.18em;color:rgba(185,28,28,.55);border:1px solid rgba(185,28,28,.22);padding:4px 9px;line-height:1.4;cursor:pointer;user-select:none}
+  /* 唱片架 */
+  #shelf-wrap{position:relative;z-index:5;padding:80px 8vw 150px}
+  #sloading{text-align:center;padding:20vh 0;font-size:.52rem;letter-spacing:.3em;color:rgba(255,255,255,.15);font-family:'Noto Serif SC',serif}
+  #sempty{display:none;text-align:center;padding:20vh 0;font-size:.55rem;letter-spacing:.32em;color:rgba(255,255,255,.12);font-family:'Noto Serif SC',serif}
+  .shelf-row{display:flex;flex-wrap:wrap;gap:5vw;align-items:flex-end;min-height:160px;padding:0 1vw}
+  .shelf-plank{height:20px;background:linear-gradient(to bottom,#5a3820 0%,#3b2210 50%,#5a3820 100%);border-radius:2px;box-shadow:0 6px 22px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,220,160,.07);margin:0 -2vw 6vh}
+  /* 黑胶唱片 */
+  .record{width:min(140px,26vw);aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 50% 50%,#0a0907 0%,#0a0907 5.5%,transparent 5.5%),radial-gradient(circle at 50% 50%,#8b1c1c 0%,#5a1010 25%,transparent 25.5%),repeating-radial-gradient(circle at 50% 50%,#0f0f0f 0%,#1c1c19 1.2%,#0f0f0f 1.2%,#191916 2.4%);position:relative;cursor:pointer;transition:transform .4s ease,box-shadow .4s;flex-shrink:0;box-shadow:3px 6px 20px rgba(0,0,0,.85)}
+  .record:hover{transform:translateY(-10px) rotate(-6deg);box-shadow:6px 14px 30px rgba(0,0,0,.9)}
+  .record.playing{animation:rec-spin 3s linear infinite}
+  @keyframes rec-spin{to{transform:rotate(360deg)}}
+  .record-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40%;height:40%;border-radius:50%;background:radial-gradient(circle,#c42020 0%,#861515 55%,#4a0a0a 100%);display:flex;align-items:center;justify-content:center;padding:8%;pointer-events:none}
+  .record-name{font-family:'Ma Shan Zheng',serif;font-size:clamp(.28rem,1.5vw,.5rem);color:rgba(255,220,170,.92);text-align:center;line-height:1.35;word-break:break-all;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .record-hole{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:6%;height:6%;border-radius:50%;background:#0a0907;pointer-events:none}
+  .record-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .record-caption{font-family:'Ma Shan Zheng',serif;font-size:clamp(.35rem,1.8vw,.55rem);color:rgba(245,240,232,.55);text-align:center;letter-spacing:.1em;max-width:min(140px,26vw);word-break:break-all}
+  /* 底部播放器 */
+  #mini-player{display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(8,7,6,.97);border-top:1px solid rgba(255,255,255,.06);padding:14px 8vw;align-items:center;gap:4vw}
+  #player-title{font-family:'Ma Shan Zheng',serif;font-size:.7rem;letter-spacing:.15em;color:rgba(245,240,232,.75);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #main-audio{flex:2;height:28px;accent-color:#b91c1c}
+  #main-video{display:none;flex:2;max-height:28vh;accent-color:#b91c1c}
+  #upload-btn{display:none;position:fixed;bottom:80px;right:26px;z-index:50;background:rgba(185,28,28,.82);color:rgba(255,255,255,.9);border:none;padding:10px 18px;font-family:'Ma Shan Zheng',serif;font-size:.75rem;letter-spacing:.2em;cursor:pointer}
+  #upload-progress{display:none;position:fixed;bottom:132px;right:26px;z-index:50;font-size:.4rem;letter-spacing:.2em;color:rgba(255,255,255,.6);font-family:'Noto Serif SC',serif;background:rgba(0,0,0,.65);padding:6px 12px}
+  #caption-panel{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(10,9,7,.95);border-top:1px solid rgba(255,255,255,.08);padding:4vh 8vw}
+  #caption-panel label{display:block;font-size:.4rem;letter-spacing:.25em;color:rgba(255,255,255,.3);font-family:'Noto Serif SC',serif;margin-bottom:1.5vh}
+  #caption-input{width:100%;background:rgba(255,255,255,.04);border:none;border-bottom:1px solid rgba(255,255,255,.15);color:rgba(245,240,232,.8);font-family:'Ma Shan Zheng',serif;font-size:.7rem;padding:.5em 0;outline:none;margin-bottom:2.5vh}
+  .caption-btns{display:flex;gap:3vw}
+  #caption-skip{background:none;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.3);font-family:'Ma Shan Zheng',serif;font-size:.6rem;letter-spacing:.2em;padding:.5em 1.5em;cursor:pointer}
+  #caption-confirm{background:none;border:1px solid rgba(185,28,28,.45);color:rgba(185,28,28,.8);font-family:'Ma Shan Zheng',serif;font-size:.6rem;letter-spacing:.2em;padding:.5em 1.5em;cursor:pointer}
+  #cover-row{display:flex;align-items:center;gap:3vw;margin-bottom:2.5vh}
+  #cover-thumb{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#c42020 0%,#861515 55%,#4a0a0a 100%);overflow:hidden;flex-shrink:0}
+  #cover-thumb img{width:100%;height:100%;object-fit:cover;display:none}
+  #cover-pick-btn{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);font-family:'Ma Shan Zheng',serif;font-size:.55rem;letter-spacing:.15em;padding:.4em 1.2em;cursor:pointer}
+  #ctx-menu{display:none;position:fixed;z-index:500;background:rgba(10,9,7,.97);border:1px solid rgba(255,255,255,.1);padding:4px 0;min-width:120px}
+  #ctx-menu button{display:block;width:100%;background:none;border:none;color:rgba(245,240,232,.65);font-family:'Ma Shan Zheng',serif;font-size:.6rem;letter-spacing:.15em;padding:.6em 1.4em;cursor:pointer;text-align:left}
+  #ctx-menu button:hover{background:rgba(255,255,255,.06)}
+  #edit-panel{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(10,9,7,.95);border-top:1px solid rgba(255,255,255,.08);padding:4vh 8vw}
+  #edit-panel label{display:block;font-size:.4rem;letter-spacing:.25em;color:rgba(255,255,255,.3);font-family:'Noto Serif SC',serif;margin-bottom:1.5vh}
+  #edit-title{width:100%;background:rgba(255,255,255,.04);border:none;border-bottom:1px solid rgba(255,255,255,.15);color:rgba(245,240,232,.8);font-family:'Ma Shan Zheng',serif;font-size:.7rem;padding:.5em 0;outline:none;margin-bottom:2.5vh}
+  #edit-cover-row{display:flex;align-items:center;gap:3vw;margin-bottom:2.5vh}
+  #edit-cover-thumb{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#c42020 0%,#861515 55%,#4a0a0a 100%);overflow:hidden;flex-shrink:0}
+  #edit-cover-thumb img{width:100%;height:100%;object-fit:cover;display:none}
+  #edit-cover-btn{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);font-family:'Ma Shan Zheng',serif;font-size:.55rem;letter-spacing:.15em;padding:.4em 1.2em;cursor:pointer}
+  #edit-cancel{background:none;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.3);font-family:'Ma Shan Zheng',serif;font-size:.6rem;letter-spacing:.2em;padding:.5em 1.5em;cursor:pointer}
+  #edit-save{background:none;border:1px solid rgba(185,28,28,.45);color:rgba(185,28,28,.8);font-family:'Ma Shan Zheng',serif;font-size:.6rem;letter-spacing:.2em;padding:.5em 1.5em;cursor:pointer}
+</style>
+
+<div id="topbar">
+  <a href="/?dir=1" id="back">← 目录</a>
+  <div id="page-title">絲竹管弦</div>
+  <div id="admin-badge" style="display:none">管理模式</div>
+</div>
+
+<div id="shelf-wrap">
+  <div id="sloading">加载中……</div>
+  <div id="sempty">尚无音乐</div>
+  <div id="shelves"></div>
+</div>
+<div id="mini-player">
+  <div id="player-title">——</div>
+  <audio id="main-audio" controls></audio>
+  <video id="main-video" controls preload="none"></video>
+</div>
+
+<div id="stamp">火辣</div>
+<button id="upload-btn">＋ 上传音乐</button>
+<div id="upload-progress"></div>
+<input type="file" id="file-input" accept="audio/*,video/*" style="display:none">
+<input type="file" id="cover-input" accept="image/*" style="display:none">
+<input type="file" id="edit-cover-input" accept="image/*" style="display:none">
+<div id="ctx-menu"><button id="ctx-edit">✎ 编辑此曲</button></div>
+<div id="edit-panel">
+  <label>曲目名称</label>
+  <input id="edit-title" type="text" maxlength="80" autocomplete="off">
+  <div id="edit-cover-row">
+    <div id="edit-cover-thumb"><img id="edit-cover-preview"></div>
+    <button id="edit-cover-btn" type="button">更换封面图</button>
+  </div>
+  <div class="caption-btns"><button id="edit-cancel">取消</button><button id="edit-save">保存</button></div>
+</div>
+<div id="caption-panel">
+  <label>曲目名称（可修改）</label>
+  <input id="caption-input" type="text" placeholder="曲名……" maxlength="80" autocomplete="off">
+  <div id="cover-row">
+    <div id="cover-thumb"><img id="cover-preview"></div>
+    <button id="cover-pick-btn" type="button">＋ 选封面图</button>
+  </div>
+  <div class="caption-btns"><button id="caption-skip">保留文件名</button><button id="caption-confirm">确认上传</button></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="/firebase-config.js"></script>
+<script>
+var dot=document.getElementById('cur-dot'),mx=innerWidth/2,my=mx,dx=mx,dy=my;
+document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;});
+(function tick(){dx+=(mx-dx)*.35;dy+=(my-dy)*.35;dot.style.left=dx+'px';dot.style.top=dy+'px';requestAnimationFrame(tick);})();
+var shan=document.getElementById('shan'),W=innerWidth,H=innerHeight;
+document.addEventListener('mousemove',function(e){shan.style.transform='translate('+(((e.clientX/W)-.5)*12).toFixed(1)+'px,'+(((e.clientY/H)-.5)*8).toFixed(1)+'px)';});
+window.addEventListener('resize',function(){W=innerWidth;H=innerHeight;});
+
+var ADMIN=(sessionStorage.getItem('admin')==='1'),sc=0;
+document.getElementById('stamp').addEventListener('click',function(){if(++sc>=3){sc=0;var pw=prompt('管理员密码');if(pw===window.ADMIN_PASSWORD){sessionStorage.setItem('admin','1');ADMIN=true;document.getElementById('admin-badge').style.display='block';document.getElementById('upload-btn').style.display='block';}else if(pw!==null)alert('密码错误');}});
+if(ADMIN){document.getElementById('admin-badge').style.display='block';document.getElementById('upload-btn').style.display='block';}
+document.getElementById('admin-badge').addEventListener('click',function(){
+  sessionStorage.removeItem('admin');ADMIN=false;
+  document.getElementById('admin-badge').style.display='none';
+  document.getElementById('upload-btn').style.display='none';
+  loadTracks();
+});
+
+var configured=(window.SB_URL&&window.SB_URL.indexOf('YOUR_PROJECT')<0);
+var sb=configured?supabase.createClient(window.SB_URL,window.SB_KEY):null;
+if(configured) loadTracks();
+else document.getElementById('sloading').textContent='请先配置 firebase-config.js 中的 SB_URL / SB_KEY';
+
+var _currentRec=null;
+var _mainAudio=document.getElementById('main-audio');
+var _mainVideo=document.getElementById('main-video');
+function _isVideoUrl(url){return /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(url);}
+function _stopAll(){if(_currentRec){_currentRec.classList.remove('playing');_currentRec=null;}_mainAudio.pause();_mainVideo.pause();}
+_mainAudio.addEventListener('ended',function(){if(_currentRec){_currentRec.classList.remove('playing');_currentRec=null;}});
+_mainAudio.addEventListener('pause',function(){if(_currentRec)_currentRec.classList.remove('playing');});
+_mainAudio.addEventListener('play',function(){if(_currentRec)_currentRec.classList.add('playing');});
+_mainVideo.addEventListener('ended',function(){if(_currentRec){_currentRec.classList.remove('playing');_currentRec=null;}});
+_mainVideo.addEventListener('pause',function(){if(_currentRec)_currentRec.classList.remove('playing');});
+_mainVideo.addEventListener('play',function(){if(_currentRec)_currentRec.classList.add('playing');});
+
+function loadTracks(){
+  document.getElementById('shelves').innerHTML='';
+  sb.from('sounds').select('*').order('created_at',{ascending:false})
+    .then(function(res){
+      document.getElementById('sloading').style.display='none';
+      if(res.error){document.getElementById('sloading').textContent='加载失败: '+res.error.message;return;}
+      var data=res.data||[];
+      var perRow=4;
+      var totalRows=Math.max(3,Math.ceil(data.length/perRow));
+      for(var i=0;i<totalRows;i++){
+        var row=document.createElement('div'); row.className='shelf-row';
+        data.slice(i*perRow,(i+1)*perRow).forEach(function(d){row.appendChild(makeRecord(d));});
+        var plank=document.createElement('div'); plank.className='shelf-plank';
+        document.getElementById('shelves').appendChild(row);
+        document.getElementById('shelves').appendChild(plank);
+      }
+    });
+}
+function makeRecord(d){
+  var wrap=document.createElement('div'); wrap.className='record-wrap';
+  var rec=document.createElement('div'); rec.className='record';
+  var lbl=document.createElement('div'); lbl.className='record-label';
+  if(d.cover){
+    lbl.style.cssText='background:url('+d.cover+') center/cover no-repeat';
+  }
+  var nm=document.createElement('div'); nm.className='record-name';
+  if(!d.cover) nm.textContent=d.title||'未命名';
+  lbl.appendChild(nm);
+  var hole=document.createElement('div'); hole.className='record-hole';
+  rec.appendChild(lbl); rec.appendChild(hole);
+  var cap=document.createElement('div'); cap.className='record-caption';
+  cap.textContent=d.title||'未命名'; wrap.appendChild(rec); wrap.appendChild(cap);
+  rec.addEventListener('contextmenu',function(e){
+    if(!ADMIN) return;
+    e.preventDefault();
+    _editData=d;
+    var cm=document.getElementById('ctx-menu');
+    cm.style.left=Math.min(e.clientX,innerWidth-140)+'px';
+    cm.style.top=Math.min(e.clientY,innerHeight-70)+'px';
+    cm.style.display='block';
+  });
+  rec.addEventListener('click',function(){
+    var isVid=_isVideoUrl(d.url);
+    var activePlayer=isVid?_mainVideo:_mainAudio;
+    var idlePlayer=isVid?_mainAudio:_mainVideo;
+    if(_currentRec===rec){
+      activePlayer.paused?activePlayer.play():activePlayer.pause();
+      return;
+    }
+    _stopAll();
+    _currentRec=rec;
+    document.getElementById('player-title').textContent=d.title||'未命名';
+    idlePlayer.style.display='none';
+    activePlayer.style.display='block';
+    activePlayer.src=d.url; activePlayer.play();
+    document.getElementById('mini-player').style.display='flex';
+  });
+  return wrap;
+}
+document.getElementById('upload-btn').addEventListener('click',function(){document.getElementById('file-input').click();});
+var _pendingFile=null,_pendingCover=null;
+document.getElementById('file-input').addEventListener('change',function(e){
+  _pendingFile=e.target.files[0]; e.target.value='';
+  if(!_pendingFile) return;
+  _pendingCover=null;
+  document.getElementById('cover-preview').style.display='none';
+  document.getElementById('caption-input').value=_pendingFile.name.replace(/\.[^.]+$/,'');
+  document.getElementById('caption-panel').style.display='block';
+});
+document.getElementById('cover-pick-btn').addEventListener('click',function(){document.getElementById('cover-input').click();});
+document.getElementById('cover-input').addEventListener('change',function(e){
+  var f=e.target.files[0]; e.target.value='';
+  if(!f) return;
+  _pendingCover=f;
+  var img=document.getElementById('cover-preview');
+  img.src=URL.createObjectURL(f); img.style.display='block';
+});
+async function doUploadTrack(title){
+  document.getElementById('caption-panel').style.display='none';
+  var file=_pendingFile; _pendingFile=null;
+  var coverFile=_pendingCover; _pendingCover=null;
+  var prog=document.getElementById('upload-progress');prog.style.display='block';prog.textContent='上传中…';
+  try{
+    var ext=file.name.split('.').pop().toLowerCase()||'mp3';
+    var path='sounds/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+ext;
+    var r=await sb.storage.from('sounds').upload(path,file);
+    if(r.error) throw r.error;
+    var url=sb.storage.from('sounds').getPublicUrl(path).data.publicUrl;
+    var coverUrl=null;
+    if(coverFile){
+      var cext=coverFile.name.split('.').pop().toLowerCase()||'jpg';
+      var cpath='sounds/covers/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+cext;
+      var cr=await sb.storage.from('sounds').upload(cpath,coverFile);
+      if(!cr.error) coverUrl=sb.storage.from('sounds').getPublicUrl(cpath).data.publicUrl;
+    }
+    var ins=await sb.from('sounds').insert({url:url,title:title,cover:coverUrl});
+    if(ins.error) throw ins.error;
+    prog.textContent='上传完成';setTimeout(function(){prog.style.display='none';},2000);loadTracks();
+  }catch(err){prog.textContent='上传失败: '+err.message;}
+}
+document.getElementById('caption-skip').addEventListener('click',function(){
+  doUploadTrack(_pendingFile?_pendingFile.name.replace(/\.[^.]+$/,''):'');
+});
+document.getElementById('caption-confirm').addEventListener('click',function(){
+  doUploadTrack(document.getElementById('caption-input').value.trim()||((_pendingFile||{}).name||'').replace(/\.[^.]+$/,''));
+});
+var _editData=null,_editNewCover=null;
+document.addEventListener('click',function(){document.getElementById('ctx-menu').style.display='none';});
+document.getElementById('ctx-edit').addEventListener('click',function(){
+  document.getElementById('ctx-menu').style.display='none';
+  if(!_editData) return;
+  _editNewCover=null;
+  document.getElementById('edit-title').value=_editData.title||'';
+  var prev=document.getElementById('edit-cover-preview');
+  if(_editData.cover){prev.src=_editData.cover;prev.style.display='block';}
+  else{prev.src='';prev.style.display='none';}
+  document.getElementById('edit-panel').style.display='block';
+});
+document.getElementById('edit-cancel').addEventListener('click',function(){
+  document.getElementById('edit-panel').style.display='none';
+  _editData=null; _editNewCover=null;
+});
+document.getElementById('edit-cover-btn').addEventListener('click',function(){document.getElementById('edit-cover-input').click();});
+document.getElementById('edit-cover-input').addEventListener('change',function(e){
+  var f=e.target.files[0]; e.target.value='';
+  if(!f) return;
+  _editNewCover=f;
+  var img=document.getElementById('edit-cover-preview');
+  img.src=URL.createObjectURL(f); img.style.display='block';
+});
+document.getElementById('edit-save').addEventListener('click',async function(){
+  if(!_editData) return;
+  document.getElementById('edit-panel').style.display='none';
+  var prog=document.getElementById('upload-progress');prog.style.display='block';prog.textContent='\u4fdd\u5b58\u4e2d\u2026';
+  try{
+    var newTitle=document.getElementById('edit-title').value.trim()||_editData.title;
+    var newCover=_editData.cover||null;
+    if(_editNewCover){
+      var cext=_editNewCover.name.split('.').pop().toLowerCase()||'jpg';
+      var cpath='sounds/covers/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+cext;
+      var cr=await sb.storage.from('sounds').upload(cpath,_editNewCover);
+      if(!cr.error) newCover=sb.storage.from('sounds').getPublicUrl(cpath).data.publicUrl;
+    }
+    var upd=await sb.from('sounds').update({title:newTitle,cover:newCover}).eq('id',_editData.id);
+    if(upd.error) throw upd.error;
+    prog.textContent='\u4fdd\u5b58\u5b8c\u6210';setTimeout(function(){prog.style.display='none';},2000);
+    _editData=null; _editNewCover=null; loadTracks();
+  }catch(err){prog.textContent='\u4fdd\u5b58\u5931\u8d25: '+err.message;}
+});
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>

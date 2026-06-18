@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鸿雁传书 · 火辣</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { min-height: 100%; background: #0a0907; }
+    #bg { position: fixed; inset: 0; z-index: 0; background: url('/images/bg-river.jpg') center/cover no-repeat; }
+    #bg::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.72); }
+    body { font-family: 'Ma Shan Zheng','STKaiti',serif; -webkit-font-smoothing: antialiased; color: rgba(245,240,232,.7); }
+    * { cursor: none; }
+    #cur-dot { position: fixed; z-index: 9999; width: 4px; height: 4px; background: rgba(255,255,255,.65); border-radius: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+    #grain { position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: .04; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 220px 220px; }
+    #shan { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+    #back { font-size: .5rem; letter-spacing: .28em; color: rgba(255,255,255,.22); font-family: 'Noto Serif SC',serif; text-decoration: none; transition: color .3s; }
+    #back:hover { color: rgba(255,255,255,.7); }
+    #stamp { position: fixed; bottom: 26px; right: 26px; z-index: 50; font-size: .9rem; letter-spacing: .18em; color: rgba(185,28,28,.55); border: 1px solid rgba(185,28,28,.22); padding: 4px 9px; line-height: 1.4; cursor: pointer; user-select: none; }
+    #admin-badge { font-size: .42rem; letter-spacing: .22em; color: rgba(185,28,28,.7); font-family: 'Noto Serif SC',serif; display: none; cursor: pointer; }
+
+    /* 顶栏 */
+    #topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 18px 26px; background: linear-gradient(to bottom, rgba(10,9,7,.85), transparent); }
+    #page-title { font-size: .95rem; letter-spacing: .25em; color: rgba(245,240,232,.45); font-family: 'Ma Shan Zheng',serif; }
+
+    /* 内容区 */
+    #main { position: relative; z-index: 5; max-width: 520px; margin: 0 auto; padding: 80px 16px 16vh; }
+
+    /* 发信表单 */
+    #compose { border: 1px solid rgba(255,255,255,.06); padding: 4vh 5vw; margin-bottom: 8vh; }
+    #compose h2 { font-size: .9rem; letter-spacing: .25em; color: rgba(245,240,232,.4); margin-bottom: 3vh; font-weight: normal; }
+    .field { margin-bottom: 2.2vh; }
+    .field label { display: block; font-size: .42rem; letter-spacing: .25em; color: rgba(255,255,255,.28); font-family: 'Noto Serif SC',serif; margin-bottom: .7vh; }
+    .field input, .field textarea {
+      width: 100%; background: rgba(255,255,255,.03); border: none;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      color: rgba(245,240,232,.8); font-family: 'Ma Shan Zheng','STKaiti',serif;
+      font-size: .7rem; padding: .6em 0; outline: none;
+      transition: border-color .3s; resize: none;
+    }
+    .field input:focus, .field textarea:focus { border-bottom-color: rgba(185,28,28,.5); }
+    .field textarea { height: 8em; }
+    #send-btn { background: none; border: 1px solid rgba(185,28,28,.4); color: rgba(185,28,28,.8); font-family: 'Ma Shan Zheng',serif; font-size: .72rem; letter-spacing: .3em; padding: .6em 2em; cursor: pointer; transition: background .3s, color .3s; }
+    #send-btn:hover { background: rgba(185,28,28,.12); color: rgba(185,28,28,1); }
+    #send-btn:disabled { opacity: .35; cursor: not-allowed; }
+    #send-status { font-size: .42rem; letter-spacing: .2em; color: rgba(255,255,255,.3); font-family: 'Noto Serif SC',serif; margin-top: 1.5vh; min-height: 1.2em; }
+    #my-letters-link { display: inline-block; margin-top: 2.5vh; font-size: .42rem; letter-spacing: .28em; color: rgba(185,28,28,.5); font-family: 'Noto Serif SC',serif; text-decoration: none; border-bottom: 1px solid rgba(185,28,28,.2); transition: color .3s; }
+    #my-letters-link:hover { color: rgba(185,28,28,.9); }
+
+    /* 消息列表 */
+    #msg-section h2 { font-size: .9rem; letter-spacing: .25em; color: rgba(245,240,232,.4); margin-bottom: 3vh; font-weight: normal; }
+    #msg-list { display: flex; flex-direction: column; gap: 2.5vh; }
+    .msg-card { border: 1px solid rgba(255,255,255,.06); padding: 3vh 3.5vw; position: relative; }
+    .msg-card .msg-name { font-size: .62rem; letter-spacing: .2em; color: rgba(185,28,28,.7); margin-bottom: .5vh; }
+    .msg-card .msg-contact { font-size: .38rem; letter-spacing: .18em; color: rgba(255,255,255,.28); font-family: 'Noto Serif SC',serif; margin-bottom: 1vh; }
+    .msg-card .msg-body { font-size: .68rem; line-height: 1.9; color: rgba(245,240,232,.65); white-space: pre-wrap; }
+    .msg-card .msg-time { font-size: .36rem; letter-spacing: .2em; color: rgba(255,255,255,.2); font-family: 'Noto Serif SC',serif; margin-top: 1.5vh; }
+    #msg-loading { font-size: .5rem; letter-spacing: .28em; color: rgba(255,255,255,.15); font-family: 'Noto Serif SC',serif; text-align: center; padding: 4vh 0; }
+  </style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="cur-dot"></div>
+<div id="grain"></div>
+<svg style="position:fixed;width:0;height:0;overflow:hidden"><defs>
+  <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="7" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.5" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</defs></svg>
+<svg id="shan" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs><filter id="b1"><feGaussianBlur stdDeviation="18"/></filter><filter id="b2"><feGaussianBlur stdDeviation="9"/></filter><filter id="b3"><feGaussianBlur stdDeviation="4"/></filter></defs>
+  <path d="M-80,680 Q120,420 260,530 Q400,640 520,280 Q640,-60 740,320 Q840,640 960,230 Q1060,-80 1180,320 Q1280,640 1400,260 Q1460,80 1540,440 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.022)" filter="url(#b1)"/>
+  <path d="M-80,780 Q140,640 280,700 Q420,760 540,530 Q660,300 760,590 Q860,840 950,580 Q1040,330 1140,590 Q1240,840 1340,620 Q1420,440 1540,660 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.036)" filter="url(#b2)"/>
+  <path d="M-80,855 Q160,805 300,832 Q430,855 560,770 Q680,685 780,818 Q860,900 940,838 Q1020,775 1120,840 Q1220,900 1340,838 Q1420,778 1540,848 L1540,900 L-80,900 Z" fill="rgba(255,255,255,0.05)" filter="url(#b3)"/>
+</svg>
+
+<div id="topbar">
+  <a href="/?dir=1" id="back">← 目录</a>
+  <div id="page-title">鴻雁傳書</div>
+  <div id="admin-badge">管理模式</div>
+</div>
+<div id="stamp">火辣</div>
+
+<div id="main">
+  <!-- 发信 -->
+  <div id="compose">
+    <h2>寄一封信</h2>
+    <div class="field"><label>称呼</label><input id="f-name" type="text" placeholder="你的名字" maxlength="30"></div>
+    <div class="field"><label>联系方式</label><input id="f-contact" type="text" placeholder="微信号 / 手机尾号 / 暗号（选填）" maxlength="60"></div>
+    <div class="field"><label>内容</label><textarea id="f-body" placeholder="写下想说的话……" maxlength="600"></textarea></div>
+    <button id="send-btn">寄出</button>
+    <div id="send-status"></div>
+    <a href="/letters/my/" id="my-letters-link">查看我寄出的信 →</a>
+  </div>
+
+  <!-- 消息列表 -->
+  <div id="msg-section">
+    <h2 id="msg-title">往来书信</h2>
+    <div id="msg-loading">加载中……</div>
+    <div id="msg-list"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="/firebase-config.js"></script>
+<script>
+/* ── 光标 ── */
+var dot=document.getElementById('cur-dot'),mx=innerWidth/2,my=mx,dx=mx,dy=my;
+document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;});
+(function tick(){dx+=(mx-dx)*.35;dy+=(my-dy)*.35;dot.style.left=dx+'px';dot.style.top=dy+'px';requestAnimationFrame(tick);})();
+var shan=document.getElementById('shan'),W=innerWidth,H=innerHeight;
+document.addEventListener('mousemove',function(e){shan.style.transform='translate('+(((e.clientX/W)-.5)*12).toFixed(1)+'px,'+(((e.clientY/H)-.5)*8).toFixed(1)+'px)';});
+window.addEventListener('resize',function(){W=innerWidth;H=innerHeight;});
+
+/* ── 发信人 UUID ── */
+var UUID=localStorage.getItem('sender_uuid');
+if(!UUID){UUID='u_'+Math.random().toString(36).substr(2,9)+'_'+Date.now();localStorage.setItem('sender_uuid',UUID);}
+
+/* ── Admin ── */
+var ADMIN=(sessionStorage.getItem('admin')==='1');
+var stampClicks=0;
+document.getElementById('stamp').addEventListener('click',function(){
+  if(++stampClicks>=3){stampClicks=0;var pw=prompt('管理员密码');if(pw===window.ADMIN_PASSWORD){sessionStorage.setItem('admin','1');ADMIN=true;onAdmin();}else if(pw!==null){alert('密码错误');}}
+});
+function onAdmin(){document.getElementById('admin-badge').style.display='block';}
+if(ADMIN) onAdmin();
+document.getElementById('admin-badge').addEventListener('click',function(){
+  sessionStorage.removeItem('admin');ADMIN=false;
+  document.getElementById('admin-badge').style.display='none';
+  loadMessages();
+});
+
+/* ── Supabase ── */
+var configured=(window.SB_URL&&window.SB_URL.indexOf('YOUR_PROJECT')<0);
+var sb=configured?supabase.createClient(window.SB_URL,window.SB_KEY):null;
+if(configured) loadMessages();
+else document.getElementById('msg-loading').textContent='请先配置 firebase-config.js 中的 SB_URL / SB_KEY';
+
+var sendBtn=document.getElementById('send-btn');
+var sendStatus=document.getElementById('send-status');
+
+sendBtn.addEventListener('click',function(){
+  var name=document.getElementById('f-name').value.trim();
+  var body=document.getElementById('f-body').value.trim();
+  if(!name){sendStatus.textContent='请填写称呼';return;}
+  if(!body){sendStatus.textContent='请写下内容';return;}
+  if(!configured){sendStatus.textContent='LeanCloud 未配置';return;}
+  sendBtn.disabled=true; sendStatus.textContent='寄出中……';
+  var contact=document.getElementById('f-contact').value.trim();
+  sb.from('letters').insert({name:name,body:body,uuid:UUID,contact:contact})
+    .then(function(res){
+      if(res.error) throw res.error;
+      sendStatus.textContent='已寄出 ✓';
+      sendBtn.disabled=false;
+      forwardEmail(name,contact,body);
+      document.getElementById('f-name').value='';
+      document.getElementById('f-contact').value='';
+      document.getElementById('f-body').value='';
+      loadMessages();
+    }).catch(function(e){sendBtn.disabled=false;sendStatus.textContent='发送失败: '+e.message;});
+});
+
+/* ── 加载消息 ── */
+function loadMessages(){
+  document.getElementById('msg-title').textContent=ADMIN?'全部书信':'我寄出的信';
+  var q=sb.from('letters').select('*').order('created_at',{ascending:false});
+  if(!ADMIN) q=q.eq('uuid',UUID);
+  q.then(function(res){
+    document.getElementById('msg-loading').style.display='none';
+    var list=document.getElementById('msg-list'); list.innerHTML='';
+    if(res.error){list.innerHTML='<p style="padding:2vh;color:rgba(255,80,80,.5)">加载失败: '+res.error.message+'</p>';return;}
+    if(!res.data.length){list.innerHTML='<p style="font-size:.5rem;letter-spacing:.28em;color:rgba(255,255,255,.12);font-family:Noto Serif SC,serif;padding:4vh 0;">尚无书信</p>';return;}
+    res.data.forEach(function(d){
+      var card=document.createElement('div'); card.className='msg-card';
+      var ts=d.created_at?new Date(d.created_at).toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'}):'';
+      var contact=d.contact?'<div class="msg-contact">'+esc(d.contact)+'</div>':'';
+      card.innerHTML='<div class="msg-name">'+esc(d.name)+'</div>'+contact+'<div class="msg-body">'+esc(d.body)+'</div><div class="msg-time">'+ts+'</div>';
+      list.appendChild(card);
+    });
+  });
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+if(window.EJ_PUBLIC_KEY) emailjs.init({publicKey:window.EJ_PUBLIC_KEY});
+
+function forwardEmail(name,contact,body){
+  if(!window.EJ_PUBLIC_KEY||!window.EJ_SERVICE_ID||!window.EJ_TEMPLATE_ID) return;
+  emailjs.send(window.EJ_SERVICE_ID,window.EJ_TEMPLATE_ID,{
+    from_name: name,
+    name:      name,
+    contact:   contact||'未填写',
+    message:   body,
+    body:      body,
+    sent_time: new Date().toLocaleString('zh-CN'),
+    to_email:  '15683545976@163.com',
+    email:     '',
+    reply_to:  ''
+  }).then(function(){
+    console.log('EmailJS OK');
+  }).catch(function(err){
+    console.error('EmailJS error:', JSON.stringify(err));
+    alert('邮件转发失败: '+JSON.stringify(err));
+  });
+}
+</script>
+</body>
+</html>

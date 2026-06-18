@@ -1,0 +1,95 @@
+/* ──────────────────────────────────────────
+   火辣的生活记录 · 创意定制样式
+────────────────────────────────────────── */
+
+/* 导航栏：磨砂玻璃质感 */
+#nav {
+  background: rgba(253, 250, 245, 0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 1px 0 rgba(180, 130, 80, 0.08) !important;
+}
+
+/* 站点标题：字间距拉开，更有仪式感 */
+#site-name,
+.blog-info-name {
+  letter-spacing: 0.15em !important;
+}
+
+/* 卡片：更大圆角 + 柔和阴影 + 悬停上浮 */
+.card-widget,
+.recent-post-item,
+.post-card-wrap {
+  border-radius: 20px !important;
+  box-shadow: 0 4px 20px rgba(150, 100, 60, 0.07) !important;
+  transition: transform 0.35s cubic-bezier(.23,1,.32,1),
+              box-shadow 0.35s cubic-bezier(.23,1,.32,1) !important;
+}
+.card-widget:hover,
+.recent-post-item:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 12px 32px rgba(150, 100, 60, 0.13) !important;
+}
+
+/* 文章标题悬停时字间距微微展开 */
+.article-title a {
+  transition: letter-spacing 0.3s ease !important;
+}
+.article-title a:hover {
+  letter-spacing: 0.04em !important;
+}
+
+/* 标签：胶囊形状 */
+.tag-outer .tag,
+a.tag {
+  border-radius: 20px !important;
+  padding: 2px 14px !important;
+}
+
+/* 引用块：左边换成暖色竖线 */
+blockquote {
+  border-left-color: #C4884E !important;
+  background: rgba(196, 136, 78, 0.05) !important;
+  border-radius: 0 12px 12px 0 !important;
+  font-style: italic;
+  color: #7a6050 !important;
+}
+
+/* 页脚：暖色渐变 */
+#footer {
+  background: linear-gradient(160deg, #F7F0E6 0%, #F0E8DA 100%) !important;
+  color: #9B8577 !important;
+}
+#footer a,
+#footer .copyright {
+  color: #9B8577 !important;
+}
+
+/* 文章内容行高更宽松，更像在翻日记 */
+#article-container p {
+  line-height: 2.2 !important;
+  letter-spacing: 0.02em;
+}
+
+/* 分割线：换成小钻石装饰 */
+#article-container hr {
+  border: none !important;
+  text-align: center;
+  overflow: visible;
+}
+#article-container hr::after {
+  content: '◆  ◇  ◆';
+  display: inline-block;
+  position: relative;
+  top: -0.7em;
+  font-size: 0.65em;
+  color: #C4884E;
+  letter-spacing: 0.4em;
+  background: var(--global-bg);
+  padding: 0 0.5em;
+}
+
+/* 回到顶部按钮：暖色 */
+#go-up {
+  background: #C4884E !important;
+}

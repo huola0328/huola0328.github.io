@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>火辣</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #0a0907;
+      overflow: hidden;
+      font-family: 'Ma Shan Zheng', 'STKaiti', serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    * { cursor: none; }
+
+    /* ── 光标 ── */
+    #cur-dot {
+      position: fixed; z-index: 9999;
+      width: 4px; height: 4px;
+      background: rgba(255,255,255,.65);
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+
+    /* ── 纸纹 ── */
+    #grain {
+      position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: .04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+    }
+
+    /* ── 山水背景 ── */
+    #shan {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      transition: transform 1.6s cubic-bezier(.23,1,.32,1);
+    }
+
+    /* ── 状态层 ── */
+    .state {
+      position: fixed; inset: 0; z-index: 5;
+      opacity: 0; pointer-events: none;
+      transition: opacity .85s ease;
+    }
+    .state.active { opacity: 1; pointer-events: all; }
+
+    /* ══════════════════════════════
+       封面
+    ══════════════════════════════ */
+    #st-cover { display: flex; align-items: center; justify-content: center; }
+    #cover-char {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'STKaiti', 'Ma Shan Zheng', serif;
+      font-size: clamp(5rem, 18vmin, 16rem);
+      font-weight: 900;
+      color: #b91c1c;
+      line-height: 1.08;
+      letter-spacing: .06em;
+      border: 4px solid #b91c1c;
+      padding: .18em .28em;
+      box-shadow: inset 0 0 0 2px rgba(185,28,28,.18), 0 0 60px rgba(185,28,28,.08);
+      opacity: 0; transform: scale(.88);
+      transition: opacity 1.4s cubic-bezier(.23,1,.32,1),
+                  transform 1.4s cubic-bezier(.23,1,.32,1),
+                  box-shadow .4s;
+      user-select: none;
+      writing-mode: vertical-rl;
+      filter: url(#ink);
+    }
+    #cover-char.in { opacity: 1; transform: scale(1); }
+    #cover-char:hover {
+      box-shadow: inset 0 0 0 2px rgba(185,28,28,.35), 0 0 100px rgba(185,28,28,.18);
+    }
+    #cover-sig {
+      position: fixed; bottom: 28px; right: 28px; z-index: 6;
+      font-size: .5rem; letter-spacing: .35em;
+      color: rgba(255,255,255,.1);
+      font-family: 'Noto Serif SC', serif; pointer-events: none;
+    }
+
+    /* ══════════════════════════════
+       目录（可滚动）
+    ══════════════════════════════ */
+    #st-dir {
+      overflow-y: auto;
+      scroll-snap-type: y proximity;
+      scrollbar-width: none;
+    }
+    #st-dir::-webkit-scrollbar { display: none; }
+
+    /* 每个条目占满一屏 */
+    .entry-section {
+      height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      scroll-snap-align: start;
+      text-decoration: none;
+      position: relative;
+      transition: background .4s;
+    }
+    .entry-section:nth-child(n+2) {
+      border-top: 1px solid rgba(255,255,255,.042);
+    }
+    .entry-section:hover { background: rgba(255,255,255,.012); }
+
+    /* entry-frame：仅作占位，文字相对 entry-section 定位 */
+    .entry-frame { display: contents; }
+
+    /* 竖排标题：相对整屏（entry-section）绝对定位 */
+    .t-part {
+      position: absolute;
+      font-family: 'Ma Shan Zheng', 'STKaiti', serif;
+      font-size: clamp(6rem, 17vmin, 14rem);
+      color: rgba(245,240,232,.6);
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      letter-spacing: .06em;
+      line-height: 1.05;
+      filter: url(#ink);
+      transition: color .45s;
+      white-space: nowrap;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .entry-section:hover .t-part { color: rgba(245,240,232,.92); }
+    /*
+      视频框居中，框顶 = 50% - min(21vmin,190px)
+      左上：字顶比框顶高出 15vmin，右边压入框左边缘
+    */
+    .t-left {
+      top:  calc(50% - min(21vmin, 190px) - 15vmin);
+      right: calc(50% + min(21vmin, 190px) - 0.6em);
+    }
+    /*
+      右下：字底比框底低出 15vmin，左边压入框右边缘
+    */
+    .t-right {
+      bottom: calc(50% - min(21vmin, 190px) - 15vmin);
+      left:  calc(50% + min(21vmin, 190px) - 0.6em);
+    }
+
+    /* 视频方框 */
+    .media-box {
+      width: min(42vmin, 380px);
+      height: min(42vmin, 380px);
+      border: 1px solid rgba(255,255,255,.07);
+      background: #080806;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative; flex-shrink: 0;
+      transition: border-color .4s;
+    }
+    .entry-section:hover .media-box { border-color: rgba(255,255,255,.16); }
+    .media-box video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+      opacity: 0; transition: opacity .18s ease;
+    }
+    .media-box video.visible { opacity: 1; }
+    .media-ph {
+      font-size: .48rem; letter-spacing: .3em;
+      color: rgba(255,255,255,.1);
+      font-family: 'Noto Serif SC', serif;
+      pointer-events: none;
+    }
+
+    /* 向下滚动提示（第一屏底部） */
+    .scroll-hint {
+      position: absolute; bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      font-size: .48rem; letter-spacing: .3em;
+      color: rgba(255,255,255,.14);
+      font-family: 'Noto Serif SC', serif;
+      animation: fadeUpDown 2.4s ease-in-out infinite;
+    }
+    @keyframes fadeUpDown {
+      0%,100% { opacity:.14; transform:translateX(-50%) translateY(0); }
+      50%      { opacity:.36; transform:translateX(-50%) translateY(-5px); }
+    }
+
+    /* ── 固定悬浮 UI（目录状态） ── */
+    #dir-back {
+      position: fixed; z-index: 30; top: 22px; left: 24px;
+      background: none; border: none;
+      font-size: .52rem; letter-spacing: .28em;
+      color: rgba(255,255,255,.18);
+      font-family: 'Noto Serif SC', serif;
+      opacity: 0; pointer-events: none;
+      transition: color .3s, opacity .8s;
+    }
+    #dir-back.show { opacity: 1; pointer-events: all; }
+    #dir-back:hover { color: rgba(255,255,255,.6); }
+
+    #dir-stamp {
+      position: fixed; z-index: 30; bottom: 28px; right: 28px;
+      font-size: .95rem; letter-spacing: .18em;
+      color: rgba(185,28,28,.58);
+      border: 1px solid rgba(185,28,28,.25);
+      padding: 5px 10px; line-height: 1.4;
+      opacity: 0; pointer-events: none;
+      transition: opacity .8s;
+    }
+    #dir-stamp.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div id="cur-dot"></div>
+<div id="grain"></div>
+
+<!-- 墨迹滤镜 -->
+<svg style="position:fixed;width:0;height:0;overflow:hidden">
+  <defs>
+    <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.5"
+          xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- 山水 -->
+<svg id="shan" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
+     xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="b1"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="b2"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="b3"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <path d="M-80,680 Q120,420 260,530 Q400,640 520,280 Q640,-60 740,320
+           Q840,640 960,230 Q1060,-80 1180,320 Q1280,640 1400,260
+           Q1460,80 1540,440 L1540,900 L-80,900 Z"
+        fill="rgba(255,255,255,0.022)" filter="url(#b1)"/>
+  <path d="M-80,780 Q140,640 280,700 Q420,760 540,530 Q660,300 760,590
+           Q860,840 950,580 Q1040,330 1140,590 Q1240,840 1340,620
+           Q1420,440 1540,660 L1540,900 L-80,900 Z"
+        fill="rgba(255,255,255,0.036)" filter="url(#b2)"/>
+  <path d="M-80,855 Q160,805 300,832 Q430,855 560,770 Q680,685 780,818
+           Q860,900 940,838 Q1020,775 1120,840 Q1220,900 1340,838
+           Q1420,778 1540,848 L1540,900 L-80,900 Z"
+        fill="rgba(255,255,255,0.05)" filter="url(#b3)"/>
+</svg>
+
+<!-- 封面 -->
+<div class="state active" id="st-cover">
+  <div id="cover-char">火辣</div>
+  <div id="cover-sig">火辣 · <span id="cover-yr"></span></div>
+</div>
+
+<!-- 目录 -->
+<div class="state" id="st-dir">
+
+  <!-- 一些瞬间 -->
+  <a href="/moments/" class="entry-section">
+    <div class="entry-frame">
+      <div class="t-part t-left">一些</div>
+      <div class="media-box">
+        <video src="/videos/moments.mp4" autoplay muted loop playsinline preload="auto"></video>
+        <span class="media-ph">瞬間</span>
+      </div>
+      <div class="t-part t-right">瞬間</div>
+    </div>
+    <span class="scroll-hint">向下</span>
+  </a>
+
+  <!-- 浮光掠影 -->
+  <a href="/glimpses/" class="entry-section">
+    <div class="entry-frame">
+      <div class="t-part t-left">浮光</div>
+      <div class="media-box">
+        <video src="/videos/glimpses.mp4" autoplay muted loop playsinline preload="auto"></video>
+        <span class="media-ph">掠影</span>
+      </div>
+      <div class="t-part t-right">掠影</div>
+    </div>
+  </a>
+
+  <!-- 鸿雁传书 -->
+  <a href="/letters/" class="entry-section">
+    <div class="entry-frame">
+      <div class="t-part t-left">鴻雁</div>
+      <div class="media-box">
+        <video src="/videos/letters.mp4" autoplay muted loop playsinline preload="auto"></video>
+        <span class="media-ph">傳書</span>
+      </div>
+      <div class="t-part t-right">傳書</div>
+    </div>
+  </a>
+
+  <!-- 丝竹管弦 -->
+  <a href="/sounds/" class="entry-section">
+    <div class="entry-frame">
+      <div class="t-part t-left">絲竹</div>
+      <div class="media-box">
+        <video src="/videos/sounds.mp4" autoplay muted loop playsinline preload="auto"></video>
+        <span class="media-ph">管弦</span>
+      </div>
+      <div class="t-part t-right">管弦</div>
+    </div>
+  </a>
+
+</div>
+
+<!-- 固定悬浮按钮（目录状态共用） -->
+<button id="dir-back">← 封面</button>
+<div id="dir-stamp">火辣</div>
+
+<script>
+document.getElementById('cover-yr').textContent = new Date().getFullYear();
+
+/* 光标 */
+var dot=document.getElementById('cur-dot');
+var mx=innerWidth/2,my=innerHeight/2,dx=mx,dy=my;
+document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;});
+(function tick(){
+  dx+=(mx-dx)*.35; dy+=(my-dy)*.35;
+  dot.style.left=dx+'px'; dot.style.top=dy+'px';
+  requestAnimationFrame(tick);
+})();
+function addHover(el){
+  el.addEventListener('mouseenter',function(){document.body.classList.add('on-link');});
+  el.addEventListener('mouseleave',function(){document.body.classList.remove('on-link');});
+}
+
+/* 封面字 */
+var coverChar=document.getElementById('cover-char');
+setTimeout(function(){coverChar.classList.add('in');},400);
+addHover(coverChar);
+
+/* 封面 → 目录 */
+function showDir(){
+  document.getElementById('st-cover').classList.remove('active');
+  document.getElementById('st-dir').classList.add('active');
+  document.getElementById('dir-back').classList.add('show');
+  document.getElementById('dir-stamp').classList.add('show');
+  document.querySelectorAll('#st-dir video').forEach(function(v){ v.play().catch(function(){}); });
+}
+coverChar.addEventListener('click', showDir);
+
+/* 目录 → 封面 */
+var dirBack=document.getElementById('dir-back');
+dirBack.addEventListener('click',function(){
+  document.getElementById('st-dir').classList.remove('active');
+  document.getElementById('st-dir').scrollTop=0;
+  dirBack.classList.remove('show');
+  document.getElementById('dir-stamp').classList.remove('show');
+  document.getElementById('st-cover').classList.add('active');
+});
+addHover(dirBack);
+
+/* 目录条目 hover */
+document.querySelectorAll('.entry-section').forEach(addHover);
+
+/* 视频：IntersectionObserver 监听滚动，展示当前区块的视频 */
+var io = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    var vid = e.target.querySelector('video');
+    if (!vid) return;
+    if (e.isIntersecting) {
+      vid.classList.add('visible');
+      vid.play().catch(function(){});
+    } else {
+      vid.classList.remove('visible');
+    }
+  });
+}, { root: document.getElementById('st-dir'), threshold: 0.5 });
+document.querySelectorAll('.entry-section').forEach(function(s){ io.observe(s); });
+
+/* 山水视差（仅山水，不移动条目） */
+var shan=document.getElementById('shan'), W=innerWidth, H=innerHeight;
+document.addEventListener('mousemove',function(e){
+  var ox=(e.clientX/W-.5), oy=(e.clientY/H-.5);
+  shan.style.transform='translate('+(ox*14).toFixed(1)+'px,'+(oy*9).toFixed(1)+'px)';
+});
+window.addEventListener('resize',function(){W=innerWidth;H=innerHeight;});
+
+/* URL 参数 ?dir=1 直接进入目录 */
+if(location.search.indexOf('dir=1')!==-1) setTimeout(showDir, 600);
+</script>
+</body>
+</html>
